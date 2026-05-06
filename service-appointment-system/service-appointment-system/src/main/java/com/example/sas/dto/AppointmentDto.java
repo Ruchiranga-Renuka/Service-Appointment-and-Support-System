@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
-
+public class AppointmentDto {
 
     @NotNull(message = "Service is required")
     private Long serviceId;
