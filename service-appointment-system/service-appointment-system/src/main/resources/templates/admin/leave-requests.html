@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Leave Requests — Admin</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>.sidebar{background:linear-gradient(180deg,#1e2d42 0%,#151f2e 100%)}</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('leaves')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h4><i data-lucide="umbrella" class="icon-sm"></i> Leave Requests</h4><p>Review and approve staff leave requests</p></div>
+      <div class="topbar-right">
+        <div class="topbar-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"
+             th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">A</div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+      <div class="card">
+        <div class="card-header">
+          <h5>Leave Requests (<span th:text="${leaves.size()}">0</span>)</h5>
+          <div class="flex-gap-8">
+            <span class="badge badge-warning" th:text="${leaves.?[status.name() == 'PENDING'].size()} + ' Pending'">0 Pending</span>
+            <span class="badge badge-success" th:text="${leaves.?[status.name() == 'APPROVED'].size()} + ' Approved'">0 Approved</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Staff Member</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr th:if="${leaves.empty}">
+                <td colspan="8"><div class="empty-state"><div class="empty-icon"><i data-lucide="umbrella" class="icon-sm"></i></div><h4>No leave requests</h4></div></td>
+              </tr>
+              <tr th:each="lv : ${leaves}">
+                <td><strong>#<span th:text="${lv.id}">1</span></strong></td>
+                <td>
+                  <div class="fw-600" th:text="${lv.staff?.fullName}">Staff</div>
+                  <div class="text-sm text-muted" th:text="${lv.staff?.email}">email</div>
+                </td>
+                <td th:text="${lv.startDate}">Start</td>
+                <td th:text="${lv.endDate}">End</td>
+                <td th:text="'—'">Days</td>
+                <td class="text-sm" th:text="${lv.reason ?: '—'}">Reason</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${lv.status.name()=='PENDING'} ? 'badge-warning' :
+                                        (${lv.status.name()=='APPROVED'} ? 'badge-success' : 'badge-danger')"
+                        th:text="${lv.status}">PENDING</span>
+                </td>
+                <td>
+                  <div th:if="${lv.status.name()=='PENDING'}" class="flex-gap-8">
+                    <form th:action="@{/admin/leave-requests/{id}/review(id=${lv.id})}" method="post" style="display:inline">
+                      <input type="hidden" name="status" value="APPROVED"/>
+                      <input type="hidden" name="note" value="Approved by Admin"/>
+                      <button class="btn btn-sm btn-success"><i data-lucide="check-circle" class="icon-sm"></i> Approve</button>
+                    </form>
+                    <form th:action="@{/admin/leave-requests/{id}/review(id=${lv.id})}" method="post" style="display:inline">
+                      <input type="hidden" name="status" value="REJECTED"/>
+                      <input type="hidden" name="note" value="Rejected by Admin"/>
+                      <button class="btn btn-sm btn-danger"><i data-lucide="x" class="icon-sm"></i> Reject</button>
+                    </form>
+                  </div>
+                  <div th:if="${lv.status.name()!='PENDING'}">
+                    <div class="text-sm text-muted">By: <span th:text="${lv.reviewedBy?.fullName ?: 'Admin'}"></span></div>
+                    <div class="text-sm text-muted" th:if="${lv.adminNote != null}" th:text="${lv.adminNote}"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

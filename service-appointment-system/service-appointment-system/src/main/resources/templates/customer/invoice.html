@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Invoice — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>
+    body { background: #eef2f9; }
+    .inv-wrap { max-width: 720px; margin: 32px auto; padding: 0 20px 40px; }
+    .inv-actions { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+    .inv-paper { background:#fff; border-radius:20px; box-shadow:0 8px 32px rgba(61,90,138,0.12); overflow:hidden; }
+    .inv-hdr { background:linear-gradient(135deg,#3d5a8a,#2c4270); padding:32px 40px; color:#fff; display:flex; justify-content:space-between; align-items:flex-start; }
+    .inv-brand-name { font-size:26px; font-weight:900; }
+    .inv-brand-sub { font-size:12px; opacity:.65; margin-top:3px; }
+    .inv-badge { text-align:right; }
+    .inv-badge h2 { font-size:28px; font-weight:900; opacity:.9; letter-spacing:2px; }
+    .inv-badge .inv-no { font-size:12px; opacity:.65; margin-top:4px; }
+    .inv-status { padding:13px 40px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .inv-status.paid { background:#d4edda; color:#155724; }
+    .inv-status.pending { background:#fff3cd; color:#856404; }
+    .inv-status.uploaded { background:#d1ecf1; color:#0c5460; }
+    .inv-status.failed  { background:#f8d7da; color:#721c24; }
+    .inv-body { padding:32px 40px; }
+    .inv-parties { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-bottom:28px; }
+    .inv-party-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:8px; }
+    .inv-meta { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
+    .inv-meta-box { background:var(--body-bg); border-radius:10px; padding:13px; }
+    .inv-meta-box .lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:3px; }
+    .inv-meta-box .val { font-size:13.5px; font-weight:700; }
+    table.inv-tbl { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    table.inv-tbl thead { background:linear-gradient(135deg,#3d5a8a,#2c4270); color:#fff; }
+    table.inv-tbl thead th { padding:11px 14px; font-size:11.5px; font-weight:700; text-align:left; text-transform:uppercase; letter-spacing:.5px; }
+    table.inv-tbl tbody td { padding:14px 14px; border-bottom:1px solid var(--border); font-size:13.5px; }
+    .inv-totals { display:flex; justify-content:flex-end; margin-bottom:28px; }
+    .inv-totals-box { width:260px; }
+    .tot-row { display:flex; justify-content:space-between; padding:7px 0; font-size:13.5px; border-bottom:1px solid var(--border); }
+    .tot-row.total { border-bottom:none; font-size:17px; font-weight:800; color:var(--primary); padding-top:12px; }
+    .receipt-box { background:var(--body-bg); border-radius:12px; padding:18px; margin-bottom:24px; }
+    .receipt-box h5 { font-size:13px; font-weight:700; margin-bottom:12px; }
+    .receipt-box img { max-width:100%; border-radius:8px; border:1px solid var(--border); max-height:280px; object-fit:contain; }
+    .inv-footer { border-top:2px dashed var(--border); padding-top:18px; font-size:12.5px; color:var(--text-muted); line-height:1.7; }
+    @media print { body{background:#fff;} .inv-actions{display:none;} .inv-wrap{max-width:100%;margin:0;padding:0;} .inv-paper{box-shadow:none;border-radius:0;} }
+  </style>
+</head>
+<body>
+<div class="inv-wrap">
+
+  <!-- Actions -->
+  <div class="inv-actions">
+    <a th:href="@{/customer/my-appointments}" class="btn btn-secondary" style="width:auto;background:#ffffff ">← My Appointments</a>
+    <button onclick="window.print()" class="btn btn-outline" style="width:auto;background: #ffffff"><i data-lucide="printer" class="icon-sm"></i> Print Invoice</button>
+    <a th:if="${payment.status.name()=='PAID'}"
+       th:href="@{/customer/feedback}" class="btn btn-primary" style="width:auto"><i data-lucide="star" class="icon-sm"></i> Leave Review</a>
+  </div>
+
+  <div class="inv-paper">
+    <!-- Header -->
+    <div class="inv-hdr">
+      <div>
+        <div class="inv-brand-name"><i data-lucide="wrench" class="icon-sm"></i> Fixora</div>
+        <div class="inv-brand-sub">Fixora</div>
+      </div>
+      <div class="inv-badge">
+        <h2>INVOICE</h2>
+        <div class="inv-no" th:text="${payment.invoiceNumber != null ? payment.invoiceNumber : 'INV-' + payment.id}">INV-001</div>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="inv-status"
+         th:classappend="${payment.status.name()=='PAID'} ? 'paid' :
+                         (${payment.status.name()=='RECEIPT_UPLOADED'} ? 'uploaded' :
+                         (${payment.status.name()=='FAILED'} ? 'failed' : 'pending'))">
+      <span th:utext="${payment.status.name()=='PAID'} ? '<i data-lucide=&quot;check-circle&quot; class=&quot;icon-sm&quot;></i> PAID — Confirmed' :
+                     (${payment.status.name()=='RECEIPT_UPLOADED'} ? '<i data-lucide=&quot;hourglass&quot; class=&quot;icon-sm&quot;></i> Receipt Uploaded — Awaiting Admin Confirmation' :
+                     (${payment.status.name()=='FAILED'} ? '<i data-lucide=&quot;x&quot; class=&quot;icon-sm&quot;></i> Payment Failed / Receipt Rejected' :
+                     '⚠ Payment Pending'))">Status</span>
+    </div>
+
+    <div class="inv-body">
+      <!-- Parties -->
+      <div class="inv-parties">
+        <div>
+          <div class="inv-party-label">Billed To</div>
+          <div style="font-size:15px;font-weight:700" th:text="${payment.customer?.fullName}">Customer</div>
+          <div style="font-size:13px;color:var(--text-muted)" th:text="${payment.customer?.email}">email</div>
+          <div style="font-size:13px;color:var(--text-muted)" th:text="${payment.customer?.phone ?: ''}">phone</div>
+        </div>
+        <div>
+          <div class="inv-party-label">From</div>
+          <div style="font-size:15px;font-weight:700">Fixora Ltd.</div>
+          <div style="font-size:13px;color:var(--text-muted)">Colombo, Sri Lanka</div>
+          <div style="font-size:13px;color:var(--text-muted)">support@fixora.lk</div>
+
+          <div th:if="${job != null and job.assignedStaff != null}" class="invoice-worker-block">
+            <div class="inv-party-label" style="margin-top:14px">Assigned Worker</div>
+            <div class="worker-mini-card">
+              <div class="worker-mini-avatar">
+                <img th:if="${job.assignedStaff.profilePictureUrl != null and !#strings.isEmpty(job.assignedStaff.profilePictureUrl)}"
+                     th:src="@{${job.assignedStaff.profilePictureUrl}}"
+                     alt="Assigned worker photo"/>
+                <span th:unless="${job.assignedStaff.profilePictureUrl != null and !#strings.isEmpty(job.assignedStaff.profilePictureUrl)}"
+                      th:text="${job.assignedStaff.fullName.substring(0,1).toUpperCase()}">W</span>
+              </div>
+              <div class="worker-mini-info">
+                <div class="name" th:text="${job.assignedStaff.fullName}">Worker Name</div>
+                <div class="meta" th:text="${job.assignedStaff.serviceType ?: 'Service Staff'}">Service Staff</div>
+                <div class="meta" th:if="${job.assignedStaff.email != null and !#strings.isEmpty(job.assignedStaff.email)}"
+                     th:text="${job.assignedStaff.email}">worker@email.com</div>
+                <div class="meta" th:if="${job.assignedStaff.phone != null and !#strings.isEmpty(job.assignedStaff.phone)}"
+                     th:text="${job.assignedStaff.phone}">0771234567</div>
+              </div>
+              <span class="worker-assigned-chip">Assigned</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Meta -->
+      <div class="inv-meta">
+        <div class="inv-meta-box">
+          <div class="lbl">Invoice No.</div>
+          <div class="val" th:text="${payment.invoiceNumber != null ? payment.invoiceNumber : 'INV-' + payment.id}">INV</div>
+        </div>
+        <div class="inv-meta-box">
+          <div class="lbl">Transaction ID</div>
+          <div class="val" style="font-family:monospace;font-size:12px" th:text="${payment.transactionId}">TXN</div>
+        </div>
+        <div class="inv-meta-box">
+          <div class="lbl">Date Issued</div>
+          <div class="val" th:text="${#temporals.format(payment.createdAt,'dd MMM yyyy')}">Date</div>
+        </div>
+        <div class="inv-meta-box">
+          <div class="lbl">Payment Method</div>
+          <div class="val" th:utext="${payment.method.name()=='CARD'} ? '<i data-lucide=&quot;credit-card&quot; class=&quot;icon-sm&quot;></i> Card' : '🏦 Bank Transfer'">Method</div>
+        </div>
+        <div class="inv-meta-box">
+          <div class="lbl">Appointment Date</div>
+          <div class="val" th:text="${payment.appointment?.appointmentDate}">Date</div>
+        </div>
+        <div class="inv-meta-box">
+          <div class="lbl">Appointment Time</div>
+          <div class="val" th:text="${payment.appointment?.appointmentTime}">Time</div>
+        </div>
+      </div>
+
+      <!-- Line items -->
+      <table class="inv-tbl">
+        <thead>
+          <tr><th>#</th><th>Description</th><th>Category</th><th>Duration</th><th style="text-align:right">Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>
+              <div style="font-weight:700" th:text="${payment.appointment?.service?.name}">Service</div>
+              <div style="font-size:12px;color:var(--text-muted)" th:text="${payment.appointment?.service?.description}">Desc</div>
+            </td>
+            <td th:text="${payment.appointment?.service?.category ?: '—'}">Cat</td>
+            <td th:text="${payment.appointment?.service?.formattedDuration != null ? payment.appointment.service.formattedDuration : '—'}">60 min</td>
+            <td style="text-align:right;font-weight:700">Rs. <span th:text="${#numbers.formatDecimal(payment.amount,0,'COMMA',2,'POINT')}">0.00</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Totals -->
+      <div class="inv-totals">
+        <div class="inv-totals-box">
+          <div class="tot-row"><span>Subtotal</span><span>Rs. <span th:text="${#numbers.formatDecimal(payment.amount,0,'COMMA',2,'POINT')}">0</span></span></div>
+          <div class="tot-row"><span>Tax</span><span>10%</span></div>
+          <div class="tot-row total"><span>TOTAL DUE</span><span>Rs. <span th:text="${#numbers.formatDecimal(payment.amount,0,'COMMA',2,'POINT')}">0</span></span></div>
+        </div>
+      </div>
+
+      <!-- Receipt (bank transfer) -->
+      <div th:if="${payment.receiptImagePath != null}" class="receipt-box">
+        <h5>📄 Uploaded Bank Transfer Receipt</h5>
+        <img th:src="@{/admin/payments/receipt/{f}(f=${payment.receiptImagePath})}" alt="Receipt"/>
+        <div style="margin-top:10px;font-size:12.5px"
+             th:utext="${payment.adminConfirmed} ? '<i data-lucide=&quot;check-circle&quot; class=&quot;icon-sm&quot;></i> Verified and confirmed by admin' : '<i data-lucide=&quot;hourglass&quot; class=&quot;icon-sm&quot;></i> Awaiting admin verification'"
+             th:style="${payment.adminConfirmed} ? 'color:#28a745' : 'color:#856404'">Status</div>
+      </div>
+
+      <!-- Footer note -->
+      <div class="inv-footer">
+        <strong>Thank you for choosing Fixora!</strong><br>
+        If you have questions about this invoice, contact us at support@fixora.lk or raise a support ticket.<br>
+        This is a computer-generated invoice and does not require a physical signature.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

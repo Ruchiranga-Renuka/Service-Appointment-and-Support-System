@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Customer Feedback — Admin</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>.sidebar{background:linear-gradient(180deg,#1e2d42 0%,#151f2e 100%)}</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('feedback')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h4><i data-lucide="message-square" class="icon-sm"></i> Customer Feedback</h4><p>Moderate and view customer reviews</p></div>
+      <div class="topbar-right">
+        <input id="tableSearch" type="text" placeholder="Search feedback..."
+               style="padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;outline:none;width:220px;"/>
+        <div class="topbar-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"
+             th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">A</div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+      <div th:if="${error}" class="alert alert-danger"><i data-lucide="ban" class="icon-sm"></i> <span th:text="${error}"></span></div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h5>All Feedbacks (<span th:text="${feedbacks.size()}">0</span>)</h5>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Service</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${feedbacks.empty}">
+                <td colspan="7"><div class="empty-state"><div class="empty-icon"><i data-lucide="message-square" class="icon-sm"></i></div><h4>No feedback found</h4></div></td>
+              </tr>
+              <tr th:each="fb : ${feedbacks}" data-searchable>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div class="topbar-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0"
+                         th:text="${fb.customer?.fullName?.substring(0,1)?.toUpperCase()}">U</div>
+                    <div class="fw-600" th:text="${fb.customer?.fullName}">Customer</div>
+                  </div>
+                </td>
+                <td th:text="${fb.appointment?.service?.name}">Service</td>
+                <td>
+                  <div style="color:#f59e0b; font-size:14px; display:flex; align-items:center">
+                    <span th:text="${fb.rating}">5</span>&nbsp;<i data-lucide="star" class="icon-sm" style="width:14px;height:14px;fill:currentColor"></i>
+                  </div>
+                </td>
+                <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" 
+                    th:text="${fb.comment != null and !fb.comment.isEmpty() ? fb.comment : '—'}"
+                    th:title="${fb.comment}">Comment</td>
+                <td>
+                  <span class="badge" th:classappend="${fb.isHidden} ? 'badge-danger' : 'badge-success'" th:text="${fb.isHidden} ? 'Hidden' : 'Public'">Status</span>
+                </td>
+                <td th:text="${#temporals.format(fb.createdAt,'MMM dd, yyyy')}">Date</td>
+                <td>
+                  <div class="flex-gap-8">
+                    <form th:action="@{/admin/feedback/{id}/hide(id=${fb.id})}" method="post" style="display:inline">
+                      <button class="btn btn-sm" th:classappend="${fb.isHidden} ? 'btn-success' : 'btn-warning'" type="submit"
+                              th:utext="${fb.isHidden} ? '<i data-lucide=&quot;eye&quot; class=&quot;icon-sm&quot;></i> Show' : '<i data-lucide=&quot;eye-off&quot; class=&quot;icon-sm&quot;></i> Hide'">Toggle</button>
+                    </form>
+                    <form th:action="@{/admin/feedback/{id}/delete(id=${fb.id})}" method="post" style="display:inline"
+                          onsubmit="return confirm('Permanently delete this feedback?')">
+                      <button class="btn btn-sm btn-danger" type="submit"><i data-lucide="trash-2" class="icon-sm"></i> Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

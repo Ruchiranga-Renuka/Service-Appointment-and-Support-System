@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Staff Profile — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>
+    .customer-panel { border-radius: 24px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+    .customer-hero { border-radius: 32px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+    .profile-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .security-summary { background: #f8fafc; border-radius: 16px; padding: 20px; border: 1px dashed #e2e8f0; }
+    
+    .day-pill-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .day-pill { position: relative; }
+    .day-pill input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .day-pill label { 
+        display: block; padding: 10px; border-radius: 12px; border: 1.5px solid #e2e8f0; 
+        text-align: center; font-size: 13px; font-weight: 600; color: #64748b; 
+        cursor: pointer; transition: all 0.2s ease;
+    }
+    .day-pill input:checked + label { background: #1e293b; color: #fff; border-color: #1e293b; }
+    .day-pill label:hover { border-color: #cbd5e1; background: #f8fafc; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/staff-sidebar :: staffSidebar('profile')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h4><i data-lucide="user-check" class="icon-sm"></i> Staff Profile</h4>
+        <p>Manage your professional identity and service availability</p>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <div class="customer-profile-page">
+        <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+        <div th:if="${error}" class="alert alert-danger"><i data-lucide="ban" class="icon-sm"></i> <span th:text="${error}"></span></div>
+
+        <section class="customer-hero">
+          <div class="customer-hero-main">
+            <div class="profile-avatar-lg" style="background: rgba(255,255,255,0.15); font-size: 2.5rem;" th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">S</div>
+            <div>
+              <h3 th:text="${currentUser?.fullName}">Staff Name</h3>
+              <p class="customer-hero-email" th:text="${currentUser?.email}">staff@example.com</p>
+              <div class="customer-tags">
+                <span class="customer-tag" style="background: rgba(255,255,255,0.1);"><i data-lucide="wrench" class="icon-sm"></i> Professional <span th:text="${currentUser.serviceType}">Service</span></span>
+                <span class="customer-tag" style="background: rgba(255,255,255,0.1);"><i data-lucide="star" class="icon-sm"></i> <span th:text="${currentUser.yearsOfExperience}">0</span> Years Exp</span>
+              </div>
+            </div>
+          </div>
+          <div class="customer-hero-metrics">
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>DESIGNATION</span><strong th:text="${currentUser.serviceType}">Plumber</strong></div>
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>ACCOUNT</span><strong>VERIFIED</strong></div>
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>RATING</span><strong>4.9 / 5.0</strong></div>
+          </div>
+        </section>
+
+        <form th:action="@{/staff/profile/update}" method="post" th:object="${dto}">
+        <div class="customer-profile-grid" style="grid-template-columns: 1fr 1fr; gap: 28px; display: grid;">
+          
+          <!-- Column 1: Personal & Professional Info -->
+          <div class="customer-panel" style="padding: 32px;">
+            <div class="profile-card-header">
+              <h5 style="margin:0; font-size: 1.15rem; font-weight: 700;"><i data-lucide="user" class="icon-sm" style="color:var(--primary);"></i> Professional Details</h5>
+            </div>
+
+            <div class="form-group mb-20">
+              <label class="form-label">Full Name</label>
+              <div class="input-wrapper customer-input-wrap">
+                <span class="input-icon"><i data-lucide="user" class="icon-sm"></i></span>
+                <input type="text" th:field="*{fullName}" class="form-control" required/>
+              </div>
+            </div>
+
+            <div class="grid-2 gap-20 mb-20">
+              <div class="form-group">
+                <label class="form-label">Contact Number</label>
+                <div class="input-wrapper customer-input-wrap">
+                  <span class="input-icon"><i data-lucide="phone" class="icon-sm"></i></span>
+                  <input type="tel" th:field="*{phone}" class="form-control"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Service Category</label>
+                <div class="input-wrapper customer-input-wrap" style="background: #f1f5f9;">
+                  <span class="input-icon"><i data-lucide="briefcase" class="icon-sm"></i></span>
+                  <input type="text" th:value="${currentUser.serviceType}" class="form-control" readonly style="cursor: not-allowed;"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-32">
+              <label class="form-label">Work Address</label>
+              <div class="input-wrapper customer-input-wrap">
+                <span class="input-icon"><i data-lucide="map-pin" class="icon-sm"></i></span>
+                <input type="text" th:field="*{address}" class="form-control"/>
+              </div>
+            </div>
+
+            <div class="security-summary mb-16" style="background: #fff;">
+                <h6 style="margin:0 0 12px 0; font-size: 0.95rem; font-weight: 700;">Account Security</h6>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <span class="text-sm text-muted">Update your portal password</span>
+                    <a th:href="@{/staff/change-password}" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;">Change Password</a>
+                </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Availability Management -->
+          <div class="customer-panel" style="padding: 32px;">
+            <div class="profile-card-header">
+              <h5 style="margin:0; font-size: 1.15rem; font-weight: 700;"><i data-lucide="calendar" class="icon-sm" style="color:#d97706;"></i> My Availability</h5>
+              <button type="submit" class="btn btn-sm btn-primary" style="padding: 10px 20px; background: #1e293b;">Save All Changes</button>
+            </div>
+
+            <div class="form-group mb-24">
+              <label class="form-label mb-12">Active Work Days</label>
+              <div class="day-pill-grid">
+                  <div th:each="day : ${ {'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'} }" class="day-pill">
+                      <input type="checkbox" th:id="'day-'+${day}" th:value="${day}" th:field="*{availability}">
+                      <label th:for="'day-'+${day}" th:text="${#strings.capitalize(day.substring(0,3))}"></label>
+                  </div>
+              </div>
+            </div>
+
+            <div class="grid-2 gap-20 mb-32">
+                <div class="form-group">
+                  <label class="form-label">Shift Starts</label>
+                  <div class="input-wrapper customer-input-wrap">
+                    <span class="input-icon"><i data-lucide="clock" class="icon-sm"></i></span>
+                    <input type="time" th:field="*{availableFromTime}" class="form-control"/>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Shift Ends</label>
+                  <div class="input-wrapper customer-input-wrap">
+                    <span class="input-icon"><i data-lucide="clock" class="icon-sm"></i></span>
+                    <input type="time" th:field="*{availableToTime}" class="form-control"/>
+                  </div>
+                </div>
+            </div>
+
+            <div style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #dcfce7;">
+              <div style="font-weight:700; font-size:14px; color:#166534; display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                <i data-lucide="check-circle" class="icon-sm"></i> Professional Status
+              </div>
+              <p style="font-size: 12px; color:#15803d; margin: 0;">Updating your availability affects when customers can book your services. Ensure your shift hours are accurate to avoid overlapping bookings.</p>
+            </div>
+          </div>
+
+        </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

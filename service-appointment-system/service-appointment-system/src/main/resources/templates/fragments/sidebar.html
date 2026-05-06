@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!-- ─── SIDEBAR ─────────────────────────────── -->
+<aside class="sidebar" th:fragment="sidebar(activeMenu)">
+
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i data-lucide="wrench" class="icon-sm"></i></div>
+    <div class="sidebar-brand-text">
+      <h3>Fixora</h3>
+      <span>Support System</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+
+    <!-- ADMIN NAV -->
+    <div sec:authorize="hasRole('ADMIN')">
+      <div class="nav-section-label">Main</div>
+      <a th:href="@{/admin/dashboard}" class="nav-item" th:classappend="${activeMenu=='dashboard'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="bar-chart-2" class="icon-sm"></i></span> Dashboard
+      </a>
+
+      <div class="nav-section-label">Management</div>
+      <a th:href="@{/admin/users}" class="nav-item" th:classappend="${activeMenu=='users'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="users" class="icon-sm"></i></span> Users
+      </a>
+      <a th:href="@{/admin/services}" class="nav-item" th:classappend="${activeMenu=='services'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="wrench" class="icon-sm"></i></span> Services
+      </a>
+      <a th:href="@{/admin/appointments}" class="nav-item" th:classappend="${activeMenu=='appointments'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="calendar" class="icon-sm"></i></span> Appointments
+      </a>
+      <a th:href="@{/admin/jobs}" class="nav-item" th:classappend="${activeMenu=='jobs'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="hammer" class="icon-sm"></i></span> Jobs
+      </a>
+
+      <div class="nav-section-label">HR & Support</div>
+      <a th:href="@{/admin/leave-requests}" class="nav-item" th:classappend="${activeMenu=='leaves'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="umbrella" class="icon-sm"></i></span> Leave Requests
+      </a>
+      <a th:href="@{/admin/support-tickets}" class="nav-item" th:classappend="${activeMenu=='tickets'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="ticket" class="icon-sm"></i></span> Support Tickets
+      </a>
+    </div>
+
+    <!-- STAFF NAV -->
+    <div sec:authorize="hasRole('STAFF')">
+      <div class="nav-section-label">Main</div>
+      <a th:href="@{/staff/dashboard}" class="nav-item" th:classappend="${activeMenu=='dashboard'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="bar-chart-2" class="icon-sm"></i></span> Dashboard
+      </a>
+
+      <div class="nav-section-label">Work</div>
+      <a th:href="@{/staff/my-jobs}" class="nav-item" th:classappend="${activeMenu=='jobs'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="hammer" class="icon-sm"></i></span> My Jobs
+      </a>
+      <a th:href="@{/staff/schedule}" class="nav-item" th:classappend="${activeMenu=='schedule'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="calendar" class="icon-sm"></i></span> Schedule
+      </a>
+      <a th:href="@{/staff/leave-apply}" class="nav-item" th:classappend="${activeMenu=='leave'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="umbrella" class="icon-sm"></i></span> Apply Leave
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a th:href="@{/staff/profile}" class="nav-item" th:classappend="${activeMenu=='profile'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="user" class="icon-sm"></i></span> My Profile
+      </a>
+    </div>
+
+    <!-- CUSTOMER NAV -->
+    <div sec:authorize="hasRole('CUSTOMER')">
+      <div class="nav-section-label">Main</div>
+      <a th:href="@{/customer/dashboard}" class="nav-item" th:classappend="${activeMenu=='dashboard'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="home" class="icon-sm"></i></span> Dashboard
+      </a>
+
+      <div class="nav-section-label">Services</div>
+      <a th:href="@{/customer/services}" class="nav-item" th:classappend="${activeMenu=='services'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="wrench" class="icon-sm"></i></span> Browse Services
+      </a>
+      <a th:href="@{/customer/book-appointment}" class="nav-item" th:classappend="${activeMenu=='book'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="plus" class="icon-sm"></i></span> Book Appointment
+      </a>
+      <a th:href="@{/customer/my-appointments}" class="nav-item" th:classappend="${activeMenu=='appointments'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="calendar" class="icon-sm"></i></span> My Appointments
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a th:href="@{/customer/payments}" class="nav-item" th:classappend="${activeMenu=='payments'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="credit-card" class="icon-sm"></i></span> Payments
+      </a>
+      <a th:href="@{/customer/support}" class="nav-item" th:classappend="${activeMenu=='support'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="ticket" class="icon-sm"></i></span> Support
+      </a>
+      <a th:href="@{/customer/feedback}" class="nav-item" th:classappend="${activeMenu=='feedback'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="star" class="icon-sm"></i></span> Feedback
+      </a>
+      <a th:href="@{/customer/profile}" class="nav-item" th:classappend="${activeMenu=='profile'} ? 'active' : ''">
+        <span class="nav-icon"><i data-lucide="user" class="icon-sm"></i></span> My Profile
+      </a>
+    </div>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" th:text="${currentUser != null ? currentUser.fullName.substring(0,1).toUpperCase() : 'U'}">U</div>
+      <div class="sidebar-user-info">
+        <div class="name" th:text="${currentUser?.fullName}">User Name</div>
+        <div class="role" th:text="${currentUser?.role}">ROLE</div>
+      </div>
+      <a th:href="@{/auth/logout}" class="sidebar-logout" title="Logout"><i data-lucide="door-open" class="icon-sm"></i></a>
+    </div>
+  </div>
+</aside>
+<!-- overlay for mobile -->
+<div id="sidebarOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99;"
+     onclick="this.style.display='none'; document.querySelector('.sidebar').classList.remove('open')"></div>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

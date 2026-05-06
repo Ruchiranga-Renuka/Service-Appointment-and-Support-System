@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Your Profile — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>
+    .customer-panel { border-radius: 24px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+    .customer-hero { border-radius: 32px; background: linear-gradient(135deg, #115e59 0%, #064e3b 100%); }
+    .profile-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .security-summary { background: #f8fafc; border-radius: 16px; padding: 20px; border: 1px dashed #e2e8f0; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/customer-sidebar :: customerSidebar('profile')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h4><i data-lucide="user-cog" class="icon-sm"></i> My Profile</h4>
+        <p>Personalize your account and contact preferences</p>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <div class="customer-profile-page">
+        <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+        <div th:if="${error}" class="alert alert-danger"><i data-lucide="ban" class="icon-sm"></i> <span th:text="${error}"></span></div>
+
+        <section class="customer-hero">
+          <div class="customer-hero-main">
+            <div class="profile-avatar-lg" style="background: rgba(255,255,255,0.15); font-size: 2.5rem;" th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">C</div>
+            <div>
+              <h3 th:text="${currentUser?.fullName}">Customer Name</h3>
+              <p class="customer-hero-email" th:text="${currentUser?.email}">email@example.com</p>
+              <div class="customer-tags">
+                <span class="customer-tag" style="background: rgba(255,255,255,0.1);"><i data-lucide="verified" class="icon-sm"></i> Verified Identity</span>
+                <span class="customer-tag" style="background: rgba(255,255,255,0.1);"><i data-lucide="shield" class="icon-sm"></i> Secure Profile</span>
+              </div>
+            </div>
+          </div>
+          <div class="customer-hero-metrics">
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>PLATFORM ROLE</span><strong th:text="${currentUser.role}">Customer</strong></div>
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>STATUS</span><strong>ACTIVE</strong></div>
+            <div class="customer-metric-card" style="background: rgba(255,255,255,0.08);"><span>MEMBER SINCE</span><strong th:text="${#temporals.format(currentUser.createdAt, 'MMM yyyy')}">2024</strong></div>
+          </div>
+        </section>
+
+        <div class="customer-profile-grid" style="grid-template-columns: 1.6fr 1fr; gap: 28px; display: grid;">
+          <!-- Profile Info -->
+          <form th:action="@{/customer/profile/update}" method="post" th:object="${dto}" class="customer-panel" style="padding: 32px;">
+            <div class="profile-card-header">
+              <h5 style="margin:0; font-size: 1.15rem; font-weight: 700;"><i data-lucide="user" class="icon-sm" style="color:var(--primary);"></i> Personal Details</h5>
+              <button type="submit" class="btn btn-sm btn-primary" style="padding: 10px 20px;">Save Profile</button>
+            </div>
+
+            <div class="form-group mb-20">
+              <label class="form-label">Full Name</label>
+              <div class="input-wrapper customer-input-wrap">
+                <span class="input-icon"><i data-lucide="user" class="icon-sm"></i></span>
+                <input type="text" th:field="*{fullName}" class="form-control" required placeholder="Full name"/>
+              </div>
+            </div>
+
+            <div class="grid-2 gap-20">
+              <div class="form-group">
+                <label class="form-label">Phone Reference</label>
+                <div class="input-wrapper customer-input-wrap">
+                  <span class="input-icon"><i data-lucide="phone" class="icon-sm"></i></span>
+                  <input type="tel" th:field="*{phone}" class="form-control" placeholder="07XXXXXXXX"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Location Address</label>
+                <div class="input-wrapper customer-input-wrap">
+                  <span class="input-icon"><i data-lucide="map-pin" class="icon-sm"></i></span>
+                  <input type="text" th:field="*{address}" class="form-control" placeholder="Street/City"/>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-xs text-muted mt-24" style="font-weight: 500;">
+              Note: Email address changes require administrative approval.
+            </div>
+          </form>
+
+          <!-- Security Sidebar -->
+          <div class="customer-panel" style="padding: 32px;">
+            <h5 style="margin:0 0 20px 0; font-size: 1.15rem; font-weight: 700;"><i data-lucide="shield-check" class="icon-sm" style="color:#2563eb;"></i> Account Security</h5>
+            
+            <div class="security-summary mb-24">
+              <div style="display:flex; gap:12px; margin-bottom: 12px;">
+                <div style="width:40px; height:40px; border-radius:10px; background:#fff; display:grid; place-items:center;">
+                  <i data-lucide="key" class="icon-sm" style="color:#d97706;"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700; font-size:14px;">Password Protection</div>
+                  <div class="text-xs text-muted">Keep your account safe by updating your password regularly.</div>
+                </div>
+              </div>
+              
+              <a th:href="@{/customer/change-password}" class="btn btn-outline" style="width:100%; border-radius:10px; border-color:#e2e8f0; color:#1e293b; background:#fff;">
+                Change Password <i data-lucide="chevron-right" class="icon-sm" style="margin-left:auto;"></i>
+              </a>
+            </div>
+
+            <div style="padding: 16px; background: #fff8f1; border-radius: 12px; border: 1px solid #ffedd5;">
+              <div style="font-weight:700; font-size:13px; color:#9a3412; display:flex; align-items:center; gap:6px;">
+                <i data-lucide="info" class="icon-sm"></i> Security Tip
+              </div>
+              <p style="font-size: 11px; color:#c2410c; margin: 4px 0 0;">Never share your password or OTP with anyone, including Fixora support staff.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

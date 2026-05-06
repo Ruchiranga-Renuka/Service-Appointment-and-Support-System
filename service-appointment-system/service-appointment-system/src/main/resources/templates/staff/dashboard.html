@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Dashboard — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}" />
+</head>
+
+<body>
+  <div class="app-layout">
+    <div th:replace="~{fragments/staff-sidebar :: staffSidebar('dashboard')}"></div>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <h4>Staff Dashboard</h4>
+          <p>Welcome, <span th:text="${currentUser?.fullName}">Staff</span> — here's your work overview</p>
+        </div>
+        <div class="topbar-right">
+          <a href="/staff/my-jobs" class="btn btn-sm" style="background:#28a745;color:#fff;border:none;"><i
+              data-lucide="hammer" class="icon-sm"></i> View My Jobs</a>
+          <div class="topbar-avatar" style="background:linear-gradient(135deg,#28a745,#20c997)"
+            th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">S</div>
+        </div>
+      </div>
+
+      <div class="page-body">
+        <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span
+            th:text="${success}"></span></div>
+
+        <!-- Welcome banner -->
+        <div
+          style="background:linear-gradient(135deg,#28a745 0%,#20c997 100%); border-radius:16px; padding:24px 28px; color:#fff; display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; box-shadow:0 4px 20px rgba(40,167,69,0.3);">
+          <div>
+            <div style="font-size:13px; opacity:0.8; margin-bottom:4px;">Staff Member</div>
+            <div style="font-size:22px; font-weight:800;" th:text="${currentUser?.fullName}">Staff Name</div>
+            <div style="font-size:13px; opacity:0.7; margin-top:4px;" th:text="${currentUser?.email}">email</div>
+          </div>
+          <div style="font-size:60px; opacity:0.3;"><i data-lucide="hard-hat" class="icon-sm"></i></div>
+        </div>
+
+        <div class="stats-grid mb-28">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#d4edda; color:#28a745;"><i data-lucide="hammer"
+                class="icon-sm"></i></div>
+            <div class="stat-info">
+              <div class="value" th:text="${totalJobs}">0</div>
+              <div class="label">Total Jobs Assigned</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon yellow"><i data-lucide="hourglass" class="icon-sm"></i></div>
+            <div class="stat-info">
+              <div class="value" th:text="${pendingJobs}">0</div>
+              <div class="label">Pending / In-Progress</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#d4edda; color:#28a745;"><i data-lucide="check-circle"
+                class="icon-sm"></i></div>
+            <div class="stat-info">
+              <div class="value" th:text="${completedJobs}">0</div>
+              <div class="label">Completed Jobs</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5><i data-lucide="hammer" class="icon-sm"></i> My Recent Jobs</h5>
+            <a href="/staff/my-jobs" class="btn btn-sm"
+              style="background:#28a745;color:#fff;border:none;width:auto">View All</a>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Date &amp; Time</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:if="${recentJobs.empty}">
+                  <td colspan="6">
+                    <div class="empty-state">
+                      <div class="empty-icon"><i data-lucide="hammer" class="icon-sm"></i></div>
+                      <h4>No jobs assigned yet</h4>
+                      <p>Jobs will appear here when assigned by admin</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:each="job : ${recentJobs}">
+                  <td>#<span th:text="${job.id}">1</span></td>
+                  <td th:text="${job.appointment?.customer?.fullName}">Customer</td>
+                  <td th:text="${job.appointment?.service?.name}">Service</td>
+                  <td>
+                    <div th:text="${job.appointment?.appointmentDate}">Date</div>
+                    <div class="text-sm text-muted" th:text="${job.appointment?.appointmentTime}">Time</div>
+                  </td>
+                  <td>
+                    <span class="badge" th:classappend="${job.status.name()=='PENDING'} ? 'badge-warning' :
+                                        (${job.status.name()=='ASSIGNED'} ? 'badge-info' :
+                                        (${job.status.name()=='IN_PROGRESS'} ? 'badge-primary' :
+                                        (${job.status.name()=='COMPLETED'} ? 'badge-success' : 'badge-danger')))"
+                      th:text="${job.status}">PENDING</span>
+                  </td>
+                  <td>
+                    <form th:action="@{/staff/jobs/{id}/status(id=${job.id})}" method="post"
+                      style="display:flex;gap:6px;align-items:center">
+                      <select name="status"
+                        style="padding:6px 8px;border-radius:7px;border:1px solid var(--border);font-size:12px;">
+                        <option value="ASSIGNED" th:selected="${job.status.name()=='ASSIGNED'}">Assigned</option>
+                        <option value="IN_PROGRESS" th:selected="${job.status.name()=='IN_PROGRESS'}">In Progress
+                        </option>
+                        <option value="COMPLETED" th:selected="${job.status.name()=='COMPLETED'}">Completed</option>
+                      </select>
+                      <button class="btn btn-sm"
+                        style="background:#28a745;color:#fff;border:none;width:auto">Update</button>
+                    </form>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script th:src="@{/js/main.js}"></script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+
+</html>

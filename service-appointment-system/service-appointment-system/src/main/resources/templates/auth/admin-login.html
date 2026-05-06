@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login - Fixora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="zen-auth-page">
+  <div class="zen-auth-shell">
+    <!-- Split Layout: left side Branding (Matching User Login Colors) -->
+    <section class="zen-auth-side" aria-label="Brand section">
+      <div class="zen-brand">
+        <div class="zen-brand-badge">Admin Portal</div>
+        <h1>Welcome Admin</h1>
+        <p>Sign in to the Fixora command center to manage bookings, track payments, and oversee all system operations.</p>
+      </div>
+      <div class="zen-features">
+        <div>Total administrative control and system monitoring.</div>
+        <div>Unified oversight of customers, staff, and services.</div>
+        <div>Secure, encrypted portal access for administrators.</div>
+      </div>
+    </section>
+
+    <!-- Right side Form -->
+    <section class="zen-auth-main">
+      <div class="zen-form-card">
+        <div class="zen-topline">
+          <span>Security Restricted</span>
+          <a th:href="@{/auth/login}">User Portal</a>
+        </div>
+
+        <h2 class="zen-heading">Admin Sign In</h2>
+        <p class="zen-subtitle">Please use your registered administrator credentials.</p>
+
+        <!-- Alerts -->
+        <div th:if="${error}" class="zen-alert zen-alert-danger" th:text="${error}"></div>
+        <div th:if="${logout}" class="zen-alert zen-alert-info" th:text="${logout}"></div>
+
+        <form th:action="@{/admin/login}" method="post" class="zen-form" id="adminLoginForm" novalidate>
+          <div class="zen-field">
+            <label for="email" class="zen-label">Administrator Email</label>
+            <input id="email" class="zen-input" type="email" name="email" 
+                   autocomplete="email" required autofocus placeholder="admin@system.com"/>
+            <div class="zen-field-error" id="emailError" style="display:none;"></div>
+          </div>
+
+          <div class="zen-field">
+            <label for="password" class="zen-label">Password</label>
+            <div class="zen-input-wrap">
+              <input id="password" class="zen-input zen-input-with-action" type="password" name="password" 
+                     autocomplete="current-password" required/>
+              <button type="button" class="zen-password-toggle" data-target="password" aria-label="Show password">Show</button>
+            </div>
+            <div class="zen-field-error" id="passwordError" style="display:none;"></div>
+          </div>
+
+          <div class="zen-meta-row">
+            <span>Unauthorized access is strictly monitored.</span>
+          </div>
+
+          <button type="submit" class="zen-submit">Login to Dashboard</button>
+        </form>
+
+        <p class="zen-footer">
+          Not an admin? <a th:href="@{/auth/login}">Go to Main Login</a>
+        </p>
+      </div>
+    </section>
+  </div>
+</div>
+<script>
+  const loginForm = document.getElementById('adminLoginForm');
+  const loginEmail = document.getElementById('email');
+  const loginPassword = document.getElementById('password');
+  const loginEmailError = document.getElementById('emailError');
+  const loginPasswordError = document.getElementById('passwordError');
+
+  function showError(el, errorEl, message) {
+    el.style.borderColor = '#b91c1c';
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  function clearError(el, errorEl) {
+    el.style.borderColor = '';
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+  }
+
+  document.querySelectorAll('.zen-password-toggle').forEach((toggleBtn) => {
+    toggleBtn.addEventListener('click', () => {
+      const targetId = toggleBtn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      toggleBtn.textContent = showing ? 'Show' : 'Hide';
+    });
+  });
+
+  loginEmail.addEventListener('input', () => clearError(loginEmail, loginEmailError));
+  loginPassword.addEventListener('input', () => clearError(loginPassword, loginPasswordError));
+
+  loginForm.addEventListener('submit', (event) => {
+    let valid = true;
+    const emailVal = loginEmail.value.trim();
+    const pwdVal = loginPassword.value;
+
+    clearError(loginEmail, loginEmailError);
+    clearError(loginPassword, loginPasswordError);
+
+    if (!emailVal) {
+      showError(loginEmail, loginEmailError, 'Admin email is required.');
+      valid = false;
+    } else if (!isValidEmail(emailVal)) {
+      showError(loginEmail, loginEmailError, 'Enter a valid email address.');
+      valid = false;
+    }
+
+    if (!pwdVal) {
+      showError(loginPassword, loginPasswordError, 'Password is required.');
+      valid = false;
+    }
+
+    if (!valid) {
+      event.preventDefault();
+    }
+  });
+</script>
+</body>
+</html>

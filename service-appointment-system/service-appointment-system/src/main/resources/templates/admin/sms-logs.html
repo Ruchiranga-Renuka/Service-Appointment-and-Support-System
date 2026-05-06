@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SMS Notification Logs — Admin</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>
+    .sidebar { background: linear-gradient(180deg, #1e2d42 0%, #151f2e 100%); }
+    .sms-message-cell { max-width: 400px; white-space: pre-wrap; font-size: 13px; color: #475569; line-height: 1.5; }
+    .simulated-badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('sms-logs')}"></div>
+  
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h4><i data-lucide="message-square" class="icon-sm"></i> SMS Notification History</h4>
+        <p>View all simulated text messages sent to customers.</p>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"
+             th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">A</div>
+      </div>
+    </div>
+    
+    <div class="page-body">
+      <div class="stats-grid mb-24">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #e0f2fe; color: #0ea5e9;"><i data-lucide="send"></i></div>
+          <div class="stat-info">
+            <div class="value" th:text="${smsLogs.size()}">0</div>
+            <div class="label">Total Generated Messages</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h5>Recent Messages</h5>
+          <span class="simulated-badge">Digital-Simulation Mode</span>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Sent At</th>
+                <th>Recipient Phone</th>
+                <th>Message Content</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:if="${smsLogs.empty}">
+                <td colspan="4"><div class="empty-state">No messages recorded yet.</div></td>
+              </tr>
+              <tr th:each="log : ${smsLogs}">
+                <td th:text="${#temporals.format(log.sentAt, 'yyyy-MM-dd HH:mm:ss')}">Time</td>
+                <td>
+                  <div style="font-weight: 600; color: #1e2d42;" th:text="${log.recipientPhone}">077...</div>
+                </td>
+                <td>
+                  <div class="sms-message-cell" th:text="${log.message}">Message</div>
+                </td>
+                <td>
+                  <span class="badge" 
+                        th:classappend="${log.status == 'SENT'} ? 'badge-success' : (${log.status == 'FAILED'} ? 'badge-danger' : 'badge-info')"
+                        th:text="${log.status}">STATUS</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>
