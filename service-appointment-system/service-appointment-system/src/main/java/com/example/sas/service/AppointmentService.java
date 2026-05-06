@@ -81,6 +81,12 @@ public class AppointmentService {
         appointment.setRefundBranchName(branch);
         
         appointmentRepository.save(appointment);
+
+        // Also cancel the associated job if it exists
+        jobRepository.findByAppointmentId(id).ifPresent(job -> {
+            job.setStatus(Job.Status.CANCELLED);
+            jobRepository.save(job);
+        });
     }
 
     public long countByStatus(Appointment.Status status) {

@@ -142,13 +142,6 @@ public class AdminController {
         return "redirect:/admin/users";
     }
 
-    @PostMapping("/users/{id}/delete")
-    public String deleteUser(@PathVariable("id") Long id, RedirectAttributes flash) {
-        userService.deleteUser(id);
-        flash.addFlashAttribute("success", "User deleted.");
-        return "redirect:/admin/users";
-    }
-
     // ─── SERVICES ─────────────────────────────────────────────────────────────
     @GetMapping("/services")
     public String services(Model model) {

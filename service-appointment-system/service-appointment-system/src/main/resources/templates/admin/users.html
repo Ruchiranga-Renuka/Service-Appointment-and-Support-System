@@ -64,10 +64,6 @@
                               th:classappend="${u.enabled} ? 'btn-warning' : 'btn-success'"
                               th:utext="${u.enabled} ? '<i data-lucide=&quot;lock&quot; class=&quot;icon-sm&quot;></i> Disable' : '<i data-lucide=&quot;check-circle&quot; class=&quot;icon-sm&quot;></i> Enable'">Toggle</button>
                     </form>
-                    <form th:action="@{/admin/users/{id}/delete(id=${u.id})}" method="post" style="display:inline">
-                      <button class="btn btn-sm btn-danger"
-                              data-confirm="Delete this user permanently?">🗑 Delete</button>
-                    </form>
                   </div>
                 </td>
               </tr>

@@ -90,7 +90,9 @@ public class JobService {
         // ── SYNC STATUS BACK TO APPOINTMENT ──
         if (job.getAppointment() != null) {
             com.example.sas.entity.Appointment apt = job.getAppointment();
-            if (status == Job.Status.IN_PROGRESS) {
+            if (status == Job.Status.ASSIGNED) {
+                apt.setStatus(com.example.sas.entity.Appointment.Status.CONFIRMED);
+            } else if (status == Job.Status.IN_PROGRESS) {
                 apt.setStatus(com.example.sas.entity.Appointment.Status.IN_PROGRESS);
             } else if (status == Job.Status.COMPLETED) {
                 apt.setStatus(com.example.sas.entity.Appointment.Status.COMPLETED);
