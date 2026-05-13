@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Users — Admin</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+  <style>.sidebar{background:linear-gradient(180deg,#1e2d42 0%,#151f2e 100%)}</style>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/admin-sidebar :: adminSidebar('users')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h4><i data-lucide="users" class="icon-sm"></i> User Management</h4><p>Manage all system users and roles</p></div>
+      <div class="topbar-right">
+        <input id="tableSearch" type="text" placeholder="Search users..."
+               style="padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;outline:none;width:220px;"/>
+        <div class="topbar-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"
+             th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">A</div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+      <div class="card">
+        <div class="card-header">
+          <h5>All Users (<span th:text="${users.size()}">0</span>)</h5>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr th:if="${users.empty}">
+                <td colspan="8"><div class="empty-state"><div class="empty-icon"><i data-lucide="users" class="icon-sm"></i></div><h4>No users found</h4></div></td>
+              </tr>
+              <tr th:each="u : ${users}" data-searchable>
+                <td><strong th:text="${u.id}">1</strong></td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div class="topbar-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0"
+                         th:text="${u.fullName.substring(0,1).toUpperCase()}">U</div>
+                    <div>
+                      <div class="fw-600" th:text="${u.fullName}">Name</div>
+                    </div>
+                  </div>
+                </td>
+                <td th:text="${u.email}">email</td>
+                <td th:text="${u.phone ?: '—'}">phone</td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${u.role.name()=='ADMIN'} ? 'badge-purple' :
+                                        (${u.role.name()=='STAFF'} ? 'badge-info' : 'badge-primary')"
+                        th:text="${u.role}">ROLE</span>
+                </td>
+                <td>
+                  <span class="badge"
+                        th:classappend="${u.enabled} ? 'badge-success' : 'badge-danger'"
+                        th:text="${u.enabled} ? 'Active' : 'Disabled'">Active</span>
+                </td>
+                <td th:text="${#temporals.format(u.createdAt,'dd MMM yyyy')}">Date</td>
+                <td>
+                  <div class="flex-gap-8">
+                    <form th:action="@{/admin/users/{id}/toggle(id=${u.id})}" method="post" style="display:inline">
+                      <button class="btn btn-sm"
+                              th:classappend="${u.enabled} ? 'btn-warning' : 'btn-success'"
+                              th:utext="${u.enabled} ? '<i data-lucide=&quot;lock&quot; class=&quot;icon-sm&quot;></i> Disable' : '<i data-lucide=&quot;check-circle&quot; class=&quot;icon-sm&quot;></i> Enable'">Toggle</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="customerSidebar(activeMenu)">
+  <!-- uses default blue sidebar from styles.css -->
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i data-lucide="user" class="icon-sm"></i></div>
+    <div class="sidebar-brand-text">
+      <h3>Customer Portal</h3>
+      <span>Fixora</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" style="flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px;">
+    <div class="nav-section-label">Main</div>
+    <a href="/customer/dashboard" class="nav-item" th:classappend="${activeMenu=='dashboard'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="home" class="icon-sm"></i></span> Dashboard
+    </a>
+
+    <div class="nav-section-label">Services</div>
+    <a href="/customer/services" class="nav-item" th:classappend="${activeMenu=='services'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="wrench" class="icon-sm"></i></span> Browse Services
+    </a>
+    <a href="/customer/book-appointment" class="nav-item" th:classappend="${activeMenu=='book'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="plus" class="icon-sm"></i></span> Book Appointment
+    </a>
+    <a href="/customer/my-appointments" class="nav-item" th:classappend="${activeMenu=='appointments'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="calendar" class="icon-sm"></i></span> My Appointments
+    </a>
+
+    <div class="nav-section-label">Account</div>
+    <a href="/customer/payments" class="nav-item" th:classappend="${activeMenu=='payments'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="credit-card" class="icon-sm"></i></span> Payments
+    </a>
+    <a href="/customer/support" class="nav-item" th:classappend="${activeMenu=='support'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="ticket" class="icon-sm"></i></span> Support
+    </a>
+    <a href="/customer/feedback" class="nav-item" th:classappend="${activeMenu=='feedback'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="star" class="icon-sm"></i></span> Feedback
+    </a>
+    <a href="/customer/profile" class="nav-item" th:classappend="${activeMenu=='profile'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="user" class="icon-sm"></i></span> My Profile
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">C</div>
+      <div class="sidebar-user-info">
+        <div class="name" th:text="${currentUser?.fullName}">Customer</div>
+        <div class="role" style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--accent-light);"><i data-lucide="user" class="icon-sm"></i> Customer</div>
+      </div>
+      <a href="/auth/logout" class="sidebar-logout" title="Logout"><i data-lucide="door-open" class="icon-sm"></i></a>
+    </div>
+  </div>
+</aside>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

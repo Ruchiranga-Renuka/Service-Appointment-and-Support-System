@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="staffSidebar(activeMenu)"
+       style="background: linear-gradient(180deg, #2a3f2a 0%, #1a2e1a 100%);">
+  <div class="sidebar-brand" style="border-bottom-color:rgba(255,255,255,0.06)">
+    <div class="sidebar-brand-icon" style="background:rgba(40,167,69,0.2)"><i data-lucide="hard-hat" class="icon-sm"></i></div>
+    <div class="sidebar-brand-text">
+      <h3>Staff Portal</h3>
+      <span>Fixora</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" style="flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 20px;">
+    <div class="nav-section-label">Main</div>
+    <a href="/staff/dashboard" class="nav-item" th:classappend="${activeMenu=='dashboard'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="bar-chart-2" class="icon-sm"></i></span> Dashboard
+    </a>
+
+    <div class="nav-section-label">Work</div>
+    <a href="/staff/my-jobs" class="nav-item" th:classappend="${activeMenu=='jobs'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="hammer" class="icon-sm"></i></span> My Jobs
+    </a>
+    <a href="/staff/schedule" class="nav-item" th:classappend="${activeMenu=='schedule'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="calendar" class="icon-sm"></i></span> Schedule
+    </a>
+    <a href="/staff/leave-apply" class="nav-item" th:classappend="${activeMenu=='leave'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="umbrella" class="icon-sm"></i></span> Apply Leave
+    </a>
+      <a href="/staff/payment" class="nav-item"
+         th:classappend="${activePage == 'payment'} ? 'active'">
+    <span class="nav-icon">
+        <i data-lucide="banknote" class="icon-sm"></i>
+    </span> Payment
+      </a>
+
+    <div class="nav-section-label">Account</div>
+    <a href="/staff/profile" class="nav-item" th:classappend="${activeMenu=='profile'} ? 'active' : ''">
+      <span class="nav-icon"><i data-lucide="user" class="icon-sm"></i></span> My Profile
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" style="background:linear-gradient(135deg,#28a745,#20c997)">
+        <img th:if="${currentUser?.profilePictureUrl != null and !#strings.isEmpty(currentUser.profilePictureUrl)}"
+             th:src="@{${currentUser.profilePictureUrl}}"
+             alt="Staff avatar"
+             class="sidebar-avatar-img"/>
+        <span th:unless="${currentUser?.profilePictureUrl != null and !#strings.isEmpty(currentUser.profilePictureUrl)}"
+              th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">S</span>
+      </div>
+      <div class="sidebar-user-info">
+        <div class="name" th:text="${currentUser?.fullName}">Staff</div>
+        <div class="role" style="color:#69db7c; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px;"><i data-lucide="hard-hat" class="icon-sm"></i> Staff Member</div>
+      </div>
+      <a href="/auth/logout" class="sidebar-logout" title="Logout"><i data-lucide="door-open" class="icon-sm"></i></a>
+    </div>
+  </div>
+</aside>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Manage Refunds — Admin</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        .sidebar { background: linear-gradient(180deg, #1e2d42 0%, #151f2e 100%); }
+        .refund-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1.5px solid #e2e8f0;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .refund-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.05); }
+        .refund-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        .refund-bank-box { background: #f8fafc; border-radius: 12px; padding: 16px; margin: 15px 0; border: 1px dashed #cbd5e1; }
+        .bank-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .bank-item .lbl { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+        .bank-item .val { font-size: 14px; font-weight: 700; color: #1e293b; }
+        .section-tab-wrap { display: flex; gap: 12px; margin-bottom: 24px; }
+        .section-tab { padding: 8px 18px; border-radius: 99px; font-size: 13px; font-weight: 700; border: 1.5px solid #e2e8f0; cursor: pointer; background: #fff; color: #64748b; }
+        .section-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <div th:replace="~{fragments/admin-sidebar :: adminSidebar('refunds')}"></div>
+    <div class="main-content">
+        <div class="topbar">
+            <div class="topbar-left">
+                <h4><i data-lucide="undo-2" class="icon-sm"></i> Refund Management</h4>
+                <p>Process and track customer cancellation refunds</p>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-avatar" style="background:linear-gradient(135deg,#c0392b,#e74c3c)" th:text="${currentUser?.fullName?.substring(0,1)?.toUpperCase()}">A</div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div th:if="${success}" class="alert alert-success"><i data-lucide="check-circle" class="icon-sm"></i> <span th:text="${success}"></span></div>
+
+            <div class="section-tab-wrap">
+                <div class="section-tab active" onclick="showTab('pending')">Pending Refunds (<span th:text="${pendingRefunds.size()}">0</span>)</div>
+                <div class="section-tab" onclick="showTab('completed')">Completed (<span th:text="${completedRefunds.size()}">0</span>)</div>
+            </div>
+
+            <!-- PENDING REFUNDS -->
+            <div id="pendingSection">
+                <div th:if="${pendingRefunds.empty}" class="empty-state card">
+                    <div class="empty-icon"><i data-lucide="check-circle" class="icon-sm"></i></div>
+                    <h4>No pending refunds</h4>
+                    <p>All cancellation refunds have been processed.</p>
+                </div>
+                
+                <div th:each="apt : ${pendingRefunds}" class="refund-card">
+                    <div class="refund-header">
+                        <div>
+                            <div style="font-size: 12px; color: #94a3b8; font-weight: 600; font-family: monospace;">APPT #<span th:text="${apt.id}">1</span></div>
+                            <h3 style="margin: 4px 0;" th:text="${apt.service?.name}">Service Name</h3>
+                            <div style="font-size: 13px; color: #64748b;"><i data-lucide="user" class="icon-xs"></i> <span th:text="${apt.customer?.fullName}">Customer</span></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 800; color: #b91c1c;">Rs. <span th:text="${#numbers.formatDecimal(apt.service?.price,0,'COMMA',2,'POINT')}">0</span></div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Original Price</div>
+                        </div>
+                    </div>
+
+                    <div class="refund-bank-box">
+                        <div class="bank-grid">
+                            <div class="bank-item"><div class="lbl">Bank Name</div><div class="val" th:text="${apt.refundBankName}">Bank</div></div>
+                            <div class="bank-item"><div class="lbl">Account Number</div><div class="val" th:text="${apt.refundAccountNumber}">123456</div></div>
+                            <div class="bank-item"><div class="lbl">Holder Name</div><div class="val" th:text="${apt.refundAccountHolderName}">Name</div></div>
+                            <div class="bank-item"><div class="lbl">Branch</div><div class="val" th:text="${apt.refundBranchName ?: 'N/A'}">Branch</div></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                        <span style="font-size: 12px; color: #64748b;"><i data-lucide="clock" class="icon-xs"></i> Cancelled on <span th:text="${#temporals.format(apt.updatedAt, 'dd MMM yyyy')}">Date</span></span>
+                        <form th:action="@{/admin/refunds/{id}/complete(id=${apt.id})}" method="post">
+                            <button class="btn btn-primary" style="width: auto; padding: 10px 20px;"><i data-lucide="check" class="icon-sm"></i> Mark Refund Completed</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPLETED REFUNDS -->
+            <div id="completedSection" style="display: none;">
+                <div th:if="${completedRefunds.empty}" class="empty-state card">
+                    <div class="empty-icon"><i data-lucide="undo-2" class="icon-sm"></i></div>
+                    <h4>No completed records</h4>
+                    <p>Processed refunds will appear here.</p>
+                </div>
+
+                <div th:each="apt : ${completedRefunds}" class="refund-card" style="opacity: 0.8; background: #fdfdfd;">
+                    <div class="refund-header" style="border-bottom-color: #f1f5f9;">
+                        <div>
+                            <div style="font-size: 12px; color: #94a3b8; font-weight: 600; font-family: monospace;">APPT #<span th:text="${apt.id}">1</span></div>
+                            <h3 style="margin: 4px 0;" th:text="${apt.service?.name}">Service Name</h3>
+                            <div style="font-size: 13px; color: #64748b;"><span class="badge badge-success" style="font-size: 10px;">Refunded</span></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 16px; font-weight: 700; color: #1e293b; text-decoration: line-through;">Rs. <span th:text="${#numbers.formatDecimal(apt.service?.price,0,'COMMA',2,'POINT')}">0</span></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 13px; color: #64748b;">
+                        Sent to <b><span th:text="${apt.refundBankName}">Bank</span></b> (<span th:text="${apt.refundAccountNumber}">Acc</span>)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+<script>
+    function showTab(type) {
+        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        if (type === 'pending') {
+            document.getElementById('pendingSection').style.display = 'block';
+            document.getElementById('completedSection').style.display = 'none';
+        } else {
+            document.getElementById('pendingSection').style.display = 'none';
+            document.getElementById('completedSection').style.display = 'block';
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Book Appointment — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/customer-sidebar :: customerSidebar('book')}"></div>
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h4><i data-lucide="plus" class="icon-sm"></i> Book Appointment</h4><p>Schedule a new service appointment</p></div>
+    </div>
+    <div class="page-body">
+      <div th:if="${error}" class="alert alert-danger"><i data-lucide="ban" class="icon-sm"></i> <span th:text="${error}"></span></div>
+
+      <div class="customer-book-shell">
+        <form th:action="@{/customer/book-appointment}" method="post" th:object="${dto}" class="customer-book-form">
+
+          <div class="form-section">
+            <div class="form-section-title"><i data-lucide="wrench" class="icon-sm"></i> Select Service</div>
+            <div class="form-group">
+              <label class="form-label">Service</label>
+              <select th:field="*{serviceId}" class="form-control no-icon" required>
+                <option value="">-- Choose a service --</option>
+                <option th:each="svc : ${services}"
+                        th:value="${svc.id}"
+                        th:text="${svc.name + ' — Rs. ' + #numbers.formatDecimal(svc.price,0,'COMMA',2,'POINT')}"
+                        th:selected="${svc.id == selectedServiceId}">Service</option>
+              </select>
+              <div th:if="${#fields.hasErrors('serviceId')}" style="color:var(--danger);font-size:12px;margin-top:4px" th:errors="*{serviceId}"></div>
+            </div>
+          </div>
+
+          <div class="form-section" id="workersSection" style="display: none;">
+            <div class="form-section-title"><i data-lucide="users" class="icon-sm"></i> Staff Requirements</div>
+            <div class="form-group">
+              <label class="form-label">No. of Workers Needed</label>
+              <select th:field="*{numberOfWorkers}" class="form-control no-icon">
+                <option value="">-- Select number of workers --</option>
+                <option value="1">1 Worker</option>
+                <option value="2">2 Workers</option>
+                <option value="3">3 Workers</option>
+                <option value="4">4 Workers</option>
+                <option value="5">5 Workers</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title"><i data-lucide="calendar" class="icon-sm"></i> Date &amp; Time</div>
+            <div class="grid-2 customer-book-grid">
+              <div class="form-group">
+                <label class="form-label">Appointment Date</label>
+                <input type="date" th:field="*{appointmentDate}" class="form-control no-icon" required/>
+                <div th:if="${#fields.hasErrors('appointmentDate')}" style="color:var(--danger);font-size:12px;margin-top:4px" th:errors="*{appointmentDate}"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Preferred Time</label>
+                <input type="time" th:field="*{appointmentTime}" class="form-control no-icon" required/>
+                <div th:if="${#fields.hasErrors('appointmentTime')}" style="color:var(--danger);font-size:12px;margin-top:4px" th:errors="*{appointmentTime}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="form-section-title"><i data-lucide="map-pin" class="icon-sm"></i> Details</div>
+            <div class="form-group">
+              <label class="form-label">Service Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon"><i data-lucide="map-pin" class="icon-sm"></i></span>
+                <input type="text" th:field="*{address}" class="form-control" placeholder="Enter your address"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Additional Notes</label>
+              <textarea th:field="*{notes}" class="form-control" rows="3" placeholder="Any special requirements or notes..."></textarea>
+            </div>
+          </div>
+
+          <div class="customer-book-actions">
+            <a th:href="@{/customer/services}" class="btn btn-secondary customer-book-btn">Cancel</a>
+            <button type="submit" class="btn btn-primary customer-book-btn customer-book-submit"><i data-lucide="calendar" class="icon-sm"></i> Book Appointment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+    
+    // Show/hide workers section based on service selection
+    const serviceSelect = document.querySelector('select[name="serviceId"]');
+    const workersSection = document.getElementById('workersSection');
+    
+    function toggleWorkersSection() {
+      const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+      const serviceName = selectedOption ? selectedOption.text : '';
+      
+      // Show workers section if service contains "house cleaning" (case insensitive)
+      if (serviceName.toLowerCase().includes('house cleaning')) {
+        workersSection.style.display = 'block';
+      } else {
+        workersSection.style.display = 'none';
+        // Clear the workers selection when hiding
+        workersSection.querySelector('select[name="numberOfWorkers"]').value = '';
+      }
+    }
+    
+    // Initial check
+    toggleWorkersSection();
+    
+    // Listen for service selection changes
+    serviceSelect.addEventListener('change', toggleWorkersSection);
+  });
+</script>
+</body>
+</html>

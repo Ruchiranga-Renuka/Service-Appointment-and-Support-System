@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Browse Services — Fixora</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="app-layout">
+  <div th:replace="~{fragments/customer-sidebar :: customerSidebar('services')}"></div>
+  <div class="main-content">
+    <div class="topbar customer-services-topbar">
+      <div class="topbar-left"><h4><i data-lucide="wrench" class="icon-sm"></i> Available Services</h4><p>Choose a service to book an appointment</p></div>
+    </div>
+    <div class="page-body customer-services-page">
+      <div th:if="${services.empty}" class="empty-state">
+        <div class="empty-icon"><i data-lucide="wrench" class="icon-sm"></i></div>
+        <h4>No services available</h4>
+        <p>Please check back later</p>
+      </div>
+
+      <div class="customer-service-search-wrap">
+        <div class="customer-category-filter-wrap">
+          <span class="customer-category-filter-icon" aria-hidden="true">
+            <i data-lucide="sliders-horizontal" class="icon-sm"></i>
+          </span>
+          <select id="customerCategoryFilter" class="customer-category-filter-select" onchange="filterCustomerServices()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div class="customer-service-search-box">
+          <span class="customer-service-search-icon" aria-hidden="true">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="8" cy="8" r="7"/><path d="M17 17l-3.87-3.87"/></svg>
+          </span>
+          <input id="customerServiceSearchInput" type="text" class="form-control customer-service-search-input" placeholder="Search services by name, category, or description" onkeyup="filterCustomerServices()"/>
+        </div>
+      </div>
+
+      <div class="customer-services-meta-bar">
+        <span class="customer-services-meta-pill">
+          <i data-lucide="shield-check" class="icon-sm" aria-hidden="true"></i>
+          <strong th:text="${services.size()}">0</strong>
+          <span>services available</span>
+        </span>
+      </div>
+
+      <div id="customerNoServicesFound" class="customer-filter-empty" style="display:none;">
+        <div class="customer-filter-empty-icon"><i data-lucide="search-x" class="icon-sm"></i></div>
+        <h4>No services found for this search.</h4>
+        <p>Try a different keyword or reset the category filter.</p>
+      </div>
+
+      <div class="service-grid" id="customerServiceGrid">
+        <div th:each="svc : ${services}" class="service-card" th:attr="data-category=${svc.category != null ? #strings.toLowerCase(svc.category) : ''}">
+          <div class="service-card-header">
+            <img th:src="${(svc.imageUrl != null and !#strings.isEmpty(svc.imageUrl)) ? svc.imageUrl : '/images/service-placeholder.svg'}"
+                 alt="Service image"
+                 class="service-card-image"
+                 loading="lazy"/>
+          </div>
+          <div class="service-card-body">
+            <h4 th:text="${svc.name}">Service Name</h4>
+            <p class="customer-service-desc" th:text="${svc.description}">Description</p>
+            <div class="customer-service-meta">
+              <span class="customer-service-meta-item">
+                <i data-lucide="clock-3" aria-hidden="true"></i>
+                <span th:text="${svc.formattedDuration != null ? svc.formattedDuration : 'Flexible'}">1 hr</span>
+              </span>
+              <span class="customer-service-meta-item">
+                <i data-lucide="tag" aria-hidden="true"></i>
+                <span th:text="${svc.category}">Category</span>
+              </span>
+            </div>
+          </div>
+          <div class="service-card-footer">
+            <div class="service-price">Rs. <span th:text="${#numbers.formatDecimal(svc.price, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+            <a th:href="@{/customer/book-appointment(serviceId=${svc.id})}" class="btn btn-primary btn-sm customer-book-btn">Book Now</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+  function initCustomerCategoryFilter() {
+    const select = document.getElementById('customerCategoryFilter');
+    const cards = document.querySelectorAll('#customerServiceGrid .service-card');
+    const categories = new Set();
+
+    cards.forEach(card => {
+      const cat = (card.getAttribute('data-category') || '').trim();
+      if (cat) categories.add(cat);
+    });
+
+    Array.from(categories)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        select.appendChild(option);
+      });
+  }
+
+  function filterCustomerServices() {
+    const searchVal = document.getElementById('customerServiceSearchInput').value.toLowerCase();
+    const categoryVal = (document.getElementById('customerCategoryFilter').value || '').toLowerCase();
+    const cards = document.querySelectorAll('#customerServiceGrid .service-card');
+    const noResult = document.getElementById('customerNoServicesFound');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      let text = card.innerText.toLowerCase();
+      const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+      const matchesSearch = !searchVal || text.includes(searchVal);
+      const matchesCategory = !categoryVal || cardCategory === categoryVal;
+      card.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+      if (matchesSearch && matchesCategory) {
+        visibleCount += 1;
+      }
+    });
+
+    if (noResult) {
+      noResult.style.display = (cards.length > 0 && visibleCount === 0) ? 'block' : 'none';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initCustomerCategoryFilter();
+    filterCustomerServices();
+  });
+</script>
+</body>
+</html>
